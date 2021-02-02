@@ -153,12 +153,20 @@ class OutputHandler {
     OutputHandler() { }
 }
 
+class ElevationCommand {
+    [string]$Command
+    [string[]]$Arguments
+    ElevationCommand() { }
+}
+
 class Command {
     [string]$Verb # PS-function name verb
     [string]$Noun # PS-function name noun
 
     [string]$OriginalName # e.g. "cubectl get user" -> "cubectl"
     [string[]]$OriginalCommandElements # e.g. "cubectl get user" -> "get", "user"
+
+    [ElevationCommand]$ElevationCommand
 
     [string[]] $Aliases
     [string] $DefaultParameterSetName
@@ -257,6 +265,13 @@ class Command {
         else {
             $sb.AppendLine('    $__commandArgs = @()')
         }
+        if ( $this.ElevationCommand.Arguments.Count -ne 0 ) {
+            $sb.AppendLine('    $__elevationArgs = @{')
+            $this.ElevationCommand.Arguments | Foreach-Object {
+                $sb.AppendLine('        "{0}"' -f $_)
+            }
+            $sb.AppendLine('    )')
+        }
         $sb.AppendLine($this.GetInvocationCommand())
         # add the help
         $help = $this.GetCommandHelp()
@@ -343,10 +358,28 @@ class Command {
         $sb.AppendLine('    $__handler = $__handlerInfo.Handler')
         $sb.AppendLine('    if ( $PSCmdlet.ShouldProcess("' + $this.OriginalName + '")) {')
         $sb.AppendLine('        if ( $__handlerInfo.StreamOutput ) {')
-       $sb.AppendLine(('            & "{0}" $__commandArgs | & $__handler' -f $this.OriginalName))
+       if ( $this.ElevationCommand -ne $null ) {
+            if ( $this.ElevationCommand.Arguments ) {
+                $sb.AppendLine(('        & "{0}" $__elevationArgs "{1}" $__commandArgs | & $__handler' -f $this.ElevationCommand.Command,$this.OriginalName))
+            }
+            else {
+                $sb.AppendLine(('        & "{0}" "{1}" $__commandArgs | & $__handler' -f $this.ElevationCommand.Command,$this.OriginalName))
+            }
+            $sb.AppendLine('        }')
+            $sb.AppendLine('        else {')
+            if ( $this.ElevationCommand.Arguments ) {
+                $sb.AppendLine(('        & "{0}" $__elevationArgs "{1}" $__commandArgs | & $__handler' -f $this.ElevationCommand.Command,$this.OriginalName))
+            }
+            else {
+                $sb.AppendLine(('            $result = & "{0}" "{1}" $__commandArgs' -f $this.ElevationCommand.Command,$this.OriginalName))
+            }
+       }
+       else {
+        $sb.AppendLine(('            & "{0}" $__commandArgs | & $__handler' -f $this.OriginalName))
         $sb.AppendLine('        }')
         $sb.AppendLine('        else {')
-       $sb.AppendLine(('            $result = & "{0}" $__commandArgs' -f $this.OriginalName))
+        $sb.AppendLine(('            $result = & "{0}" $__commandArgs' -f $this.OriginalName))
+       }
         $sb.AppendLine('            & $__handler $result')
         $sb.AppendLine('        }')
         $sb.AppendLine("    }")

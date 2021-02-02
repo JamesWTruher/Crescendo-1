@@ -1,0 +1,9 @@
+{
+    "$schema" : "./Microsoft.PowerShell.Crescendo.Schema.json",
+    "Verb": "Invoke",
+    "Noun": "id",
+    "OriginalName":"/usr/bin/id",
+    "ElevationCommand": {
+        "Command": "sudo"
+    }
+}

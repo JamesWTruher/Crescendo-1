@@ -49,6 +49,27 @@
       ],
       "description" : "The native command to be called by the function."
     },
+    "ElevationCommand": {
+      "required": false,
+      "type": "object",
+      "properties": {
+        "Command": {
+          "required": true,
+          "type": "string",
+          "description": "The name of the application which will elevate, usually sudo or runas.exe"
+        },
+        "Arguments": {
+          "required": false,
+          "type": [
+            "array",
+            "null"
+            ],
+          "items": {
+            "type":[ "string" ]
+          }
+        }
+      }
+    },
 
     "OutputHandlers": {
       "required": false,

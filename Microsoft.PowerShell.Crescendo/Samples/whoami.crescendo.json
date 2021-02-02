@@ -1,0 +1,9 @@
+{
+    "$schema" : "./Microsoft.PowerShell.Crescendo.Schema.json",
+    "Verb": "Invoke",
+    "Noun": "whoami",
+    "OriginalName":"/usr/bin/whoami",
+    "ElevationCommand": {
+        "Command": "sudo"
+    }
+}
