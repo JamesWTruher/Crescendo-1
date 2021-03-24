@@ -61,10 +61,17 @@
             "type": "string",
             "description": "The name of the parameter set which will use the handler"
           },
+          "Type": {
+            "required": false,
+            "type": "string",
+            "enum": [ "Inline", "Script", "Function" ],
+            "description": "The type of handler. This may be Inline, Script, or Function"
+          },
           "Handler": {
             "required": true,
-            "type": "string",
-            "description": "This is the code which converts the output to objects"
+            "type": [ "array", "null" ],
+            "items": [ "string" ],
+            "description": "This is the code which converts the output to objects."
           },
           "StreamOutput": {
             "required": false,
@@ -74,8 +81,6 @@
         }
       }
     },
-
-
 
     "OriginalCommandElements": {
       "required": false,

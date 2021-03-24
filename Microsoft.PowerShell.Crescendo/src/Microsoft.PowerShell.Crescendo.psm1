@@ -148,11 +148,20 @@ class ParameterInfo {
     }
 }
 
+enum OutputHandlerType {
+    Inline
+    Script
+    Function
+}
+
 class OutputHandler {
     [string]$ParameterSetName
-    [string]$Handler # This is a scriptblock which does the conversion to an object
+    [OutputHandlerType]$Type
+    [string[]]$Handler # This is a scriptblock which does the conversion to an object
     [bool]$StreamOutput # this indicates whether the output should be streamed to the handler
-    OutputHandler() { }
+    OutputHandler() {
+        $this.Type = "Inline"
+    }
 }
 
 class Command {
