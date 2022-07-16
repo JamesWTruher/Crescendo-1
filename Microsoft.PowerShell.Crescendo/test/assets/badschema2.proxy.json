@@ -1,0 +1,15 @@
+{
+	"Commands": [
+		 {
+			 "Verb": "Invoke",
+			 "Noun": "ArgReturn2",
+			 "OriginalName": "boop",
+			 "NoInvocation": true,
+			 "OriginalCommandElements": [
+				 "--arg1",
+				 "--arg2",
+				 "--arg3"
+			 ]
+		 }
+	 ]
+}

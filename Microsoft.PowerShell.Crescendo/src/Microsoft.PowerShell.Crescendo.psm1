@@ -641,14 +641,51 @@ function Export-CrescendoCommand {
     }
 }
 
+# The list of schemas which the engine is known to support
+$supportedVersions = @('2021-11','2022-06')
+function TryGetSchemaVersion {
+    param ( $file, [ref]$version )
+    # convert the schema in the configuration to just the year and month.
+    $json = Get-Content -Path $file | ConvertFrom-Json -depth 10
+    # if a schema version is not found, return null.
+    if ( $null -eq $json.'$schema' ) {
+        $version.Value = $null
+        return $false
+    }
+    # now check the value
+    try {
+        $schemaVersion = ([uri]$json.'$schema').Segments[-1]
+        $version.Value = $schemaVersion
+        return $true
+    }
+    catch {
+        $version.Value = $null
+        return $false
+    }
+}
+
 function Import-CommandConfiguration
 {
 [CmdletBinding()]
 param ([Parameter(Position=0,Mandatory=$true)][string]$file)
     $options = [System.Text.Json.JsonSerializerOptions]::new()
+
+    # check to be sure we have a schema version we can understand
+    $version = $null
+    if(TryGetSchemaVersion -file $file -version [ref]$version) {
+        if ($supportedVersions -contains $version) {
+            Write-Verbose "Found schema version $version"
+        }
+        else {
+            throw "Unsupported schema version $version"
+        }
+    } else {
+        Write-Warning -Message "Cannot determine schema version for $file"
+    }
+
     # this dance is to support multiple configurations in a single file
     # The deserializer doesn't seem to support creating [command[]]
-    Get-Content $file |
+    Get-Content -file $file |
         ConvertFrom-Json -depth 10|
         Foreach-Object {$_.Commands} |
         ForEach-Object { $_ | ConvertTo-Json -depth 10 |
