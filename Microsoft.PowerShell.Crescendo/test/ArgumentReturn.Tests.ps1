@@ -3,9 +3,9 @@ $ArgProxyFile2 = "$PSScriptRoot/assets/ArgProxy.noParam2.json"
 $ArgProxyFile3 = "$PSScriptRoot/assets/ArgProxy.withParam.json"
 Describe "Will return just argument array when configured" -tags CI {
     BeforeAll {
-        $proxy1 = Import-CommandConfiguration $ArgProxyFile1
-        $proxy2 = Import-CommandConfiguration $ArgProxyFile2
-        $proxy3 = Import-CommandConfiguration $ArgProxyFile3
+        $proxy1 = Import-CommandConfiguration -file $ArgProxyFile1
+        $proxy2 = Import-CommandConfiguration -file $ArgProxyFile2
+        $proxy3 = Import-CommandConfiguration -file $ArgProxyFile3
     }
 
     It "will return no arguments when no parameters are configured and no original elements" {

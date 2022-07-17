@@ -55,4 +55,25 @@ Describe "Schema tests" {
 
 	}
 
+    Context "New schema version is supported" {
+        BeforeAll {
+            $badFile1 = "$PSScriptRoot/assets/badschema1.proxy.json"
+            $badFile2 = "$PSScriptRoot/assets/badschema2.proxy.json"
+            # it's not really bad, but we want to make sure it's not picked up
+            $newFile3 = "$PSScriptRoot/assets/badschema3.proxy.json"
+        }
+
+		It "The 2022 schema should be supported" {
+			{ Import-CommandConfiguration -file $newFile3 } | Should -Not -Throw
+		}
+
+        It "A configuration with an unsupported schema produces an error" {
+			{ Import-CommandConfiguration -file $badFile1 } | Should -Throw "Unsupported schema version 2099-10"
+        }
+
+        It "A configuration without a schema produces a warning" {
+			Import-CommandConfiguration -file $badFile2 -WarningVariable schemaWarn -WarningAction SilentlyContinue
+			$schemaWarn | Should -match "Cannot determine schema version for .*badschema2.proxy.json"
+		}
+	}
 }

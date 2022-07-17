@@ -672,7 +672,7 @@ param ([Parameter(Position=0,Mandatory=$true)][string]$file)
 
     # check to be sure we have a schema version we can understand
     $version = $null
-    if(TryGetSchemaVersion -file $file -version [ref]$version) {
+    if(TryGetSchemaVersion -file $file -version ([ref]$version)) {
         if ($supportedVersions -contains $version) {
             Write-Verbose "Found schema version $version"
         }
@@ -685,7 +685,7 @@ param ([Parameter(Position=0,Mandatory=$true)][string]$file)
 
     # this dance is to support multiple configurations in a single file
     # The deserializer doesn't seem to support creating [command[]]
-    Get-Content -file $file |
+    Get-Content -path $file |
         ConvertFrom-Json -depth 10|
         Foreach-Object {$_.Commands} |
         ForEach-Object { $_ | ConvertTo-Json -depth 10 |

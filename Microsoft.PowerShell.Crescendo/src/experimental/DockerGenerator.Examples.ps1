@@ -13,7 +13,7 @@ $Image | Remove-DockerImage -Force
 Get-DockerContainer -Last 1 | Get-DockerContainerLogs -Timestamps
 
 # get image history
-Get-DockerImage -Repository <#tab-through-options#>fedora | Get-DockerImageHistory | Format-Table
+Get-DockerImage -Repository '<#tab-through-options#>fedora | Get-DockerImageHistory | Format-Table'
 
 # read cmdlet/parameter help
 Get-Help Get-DockerImage -Full
@@ -21,6 +21,6 @@ Get-Help Get-DockerImage -Full
 Get-Help Inspect-DockerContainer -Online
 
 # tab-completion examples
-Get-DockerImage -Repository <tab-through-options>
-Inspect-DockerImage -Image <tab-through-options>
-Get-DockerContainerLogs -Container <tab-through-options>
+Get-DockerImage -Repository '<tab-through-options>'
+Inspect-DockerImage -Image '<tab-through-options>'
+Get-DockerContainerLogs -Container '<tab-through-options>'
