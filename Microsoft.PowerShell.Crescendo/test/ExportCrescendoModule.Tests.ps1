@@ -96,5 +96,50 @@ Describe "The correct files are created when a module is created" {
             $observedSchemaUrl = $moduleContent[2] -replace ".* "
             $observedSchemaUrl | Should -Be $expectedSchemaUrl
         }
+    
+        It "The Export-CrescendoModule default parameter set is 'file'" {
+            (Get-Command Export-CrescendoModule).DefaultParameterSetName | Should -Be "file"
+        }
+    }
+
+    Context "Export-CrescendoCommand can handle command objects" {
+        BeforeAll {
+            $commandNames = "Thing1", "Thing2", "Thing3"
+            $Cmd1 = New-CrescendoCommand -Verb Get -Noun Thing1 -OriginalName "ls"
+            $Cmd2 = New-CrescendoCommand -Verb Get -Noun Thing1 -OriginalName "ls"
+            $Cmd3 = New-CrescendoCommand -Verb Get -Noun Thing3 -OriginalName "ls"
+            $commandObjects = $Cmd1, $Cmd2, $Cmd3
+        }
+
+        It "A collection of command objects can still create a module." {
+            $ModuleName = [guid]::NewGuid().ToString("N")
+            Export-CrescendoModule -ModuleName $TESTDRIVE/$ModuleName -Command $commandObjects
+            ${TESTDRIVE}/${ModuleName}.psd1 | Should -Exist
+            ${TESTDRIVE}/${ModuleName}.psm1 | Should -Exist
+            try {
+                Import-Module "${TestDrive}/${ModuleName}"
+                $observedNames = (Get-Command -Module ${ModuleName}).Name
+            }
+            finally {
+                Remove-Module $ModuleName
+            }
+            $observedNames | Should -Be $commandNames
+        }
+
+        It "A collection of command objects can still create a module." {
+            $ModuleName = [guid]::NewGuid().ToString("N")
+            $commandObjects | Export-CrescendoModule -ModuleName $TESTDRIVE/$ModuleName
+            ${TESTDRIVE}/${ModuleName}.psd1 | Should -Exist
+            ${TESTDRIVE}/${ModuleName}.psm1 | Should -Exist
+            try {
+                Import-Module "${TestDrive}/${ModuleName}"
+                $observedNames = (Get-Command -Module ${ModuleName}).Name
+            }
+            finally {
+                Remove-Module $ModuleName
+            }
+            $observedNames | Should -Be $commandNames
+        }
+
     }
 }

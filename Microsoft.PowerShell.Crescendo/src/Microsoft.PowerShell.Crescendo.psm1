@@ -651,7 +651,7 @@ function Export-CrescendoCommand {
                 }
                 if ( $Force ) {
                     $outputFile.Delete()
-                } 
+                }
                 else {
                     throw ("File '$fileName' already exists. Use -Force to overwrite")
                 }
@@ -773,9 +773,10 @@ function Export-Schema() {
 
 function Export-CrescendoModule
 {
-    [CmdletBinding(SupportsShouldProcess=$true)]
+    [CmdletBinding(SupportsShouldProcess=$true,DefaultParameterSetName="file")]
     param (
-        [Parameter(Position=1,Mandatory=$true,ValueFromPipelineByPropertyName=$true)][SupportsWildcards()][string[]]$ConfigurationFile,
+        [Parameter(Position=1,Mandatory=$true,ParameterSetName="file",ValueFromPipelineByPropertyName=$true)][SupportsWildcards()][string[]]$ConfigurationFile,
+        [Parameter(Position=1,Mandatory=$true,ParameterSetName="command",ValueFromPipeline=$true)][command[]]$Command,
         [Parameter(Position=0,Mandatory=$true)][string]$ModuleName,
         [Parameter()][switch]$Force
         )
@@ -794,7 +795,9 @@ function Export-CrescendoModule
         # static parts of the crescendo module
         # the schema will be taken from the first configuration file
         $ModuleVersion = $MyInvocation.MyCommand.Version
-        $SchemaVersion = (Get-Content (Resolve-Path $ConfigurationFile[0])[0] | ConvertFrom-Json).'$schema'
+        if ( $ParameterSetName -eq "file" ) {
+            $SchemaVersion = (Get-Content (Resolve-Path $ConfigurationFile[0])[0] | ConvertFrom-Json).'$schema'
+        }
         if ( ! $SchemaVersion ) {
             $SchemaVersion = "unknown"
         }
@@ -817,10 +820,15 @@ function Export-CrescendoModule
         if ( $PSBoundParameters['WhatIf'] ) {
             return
         }
-        $resolvedConfigurationPaths = (Resolve-Path $ConfigurationFile).Path
-        foreach($file in $resolvedConfigurationPaths) {
-            Write-Verbose "Adding $file to Crescendo collection"
-            $crescendoCollection += Import-CommandConfiguration $file
+        if ($ParameterSetName -eq "command" ) {
+            $resolvedConfigurationPaths = (Resolve-Path $ConfigurationFile).Path
+            foreach($file in $resolvedConfigurationPaths) {
+                Write-Verbose "Adding $file to Crescendo collection"
+                $crescendoCollection += Import-CommandConfiguration $file
+            }
+        }
+        else {
+            $crescendoCollection += $command
         }
     }
     END {
