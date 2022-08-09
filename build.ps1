@@ -1,6 +1,7 @@
 [CmdletBinding(SupportsShouldProcess=$true)]
 param (
     [switch]$test,
+    [string]$testPath = ".", # for testing
     [switch]$build,
     [switch]$publish,
     [switch]$signed,
@@ -139,7 +140,10 @@ if ($test) {
     Import-Module -force "${PubRoot}"
     Push-Location "${TestRoot}"
     try {
-        `$pesterArgs = @{ PassThru = `$true }
+        `$pesterArgs = @{
+            PassThru = `$true
+            Path = "${testPath}"
+        }
         if ( `$$coverage ) {
             `$pesterArgs['CodeCoverageOutputFile'] = "${PSScriptRoot}/CoverageOutput.xml"
             `$pesterArgs['CodeCoverage'] = "${PSScriptRoot}/out/Microsoft.PowerShell.Crescendo/${Version}/Microsoft.PowerShell.Crescendo.psm1"

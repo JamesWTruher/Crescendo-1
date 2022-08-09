@@ -773,10 +773,10 @@ function Export-Schema() {
 
 function Export-CrescendoModule
 {
-    [CmdletBinding(SupportsShouldProcess=$true,DefaultParameterSetName="file")]
+    [CmdletBinding(SupportsShouldProcess=$true)]
     param (
         [Parameter(Position=1,Mandatory=$true,ParameterSetName="file",ValueFromPipelineByPropertyName=$true)][SupportsWildcards()][string[]]$ConfigurationFile,
-        [Parameter(Position=1,Mandatory=$true,ParameterSetName="command",ValueFromPipeline=$true)][command[]]$Command,
+        [Parameter(Mandatory=$true,ParameterSetName="command",ValueFromPipeline=$true)][command[]]$Command,
         [Parameter(Position=0,Mandatory=$true)][string]$ModuleName,
         [Parameter()][switch]$Force
         )
@@ -792,15 +792,39 @@ function Export-CrescendoModule
         if ((Test-Path $ModuleName) -and -not $Force) {
             throw "$ModuleName already exists"
         }
+
+    }
+    PROCESS {
+        if ( $PSBoundParameters['WhatIf'] ) {
+            return
+        }
+        if ($PSCmdlet.ParameterSetName -eq "file" ) {
+            $resolvedConfigurationPaths = (Resolve-Path $ConfigurationFile).Path
+            foreach($file in $resolvedConfigurationPaths) {
+                Write-Verbose "Adding $file to Crescendo collection"
+                $crescendoCollection += Import-CommandConfiguration $file
+            }
+        }
+        else {
+            $crescendoCollection += $command
+        }
+    }
+    END {
+
+        if ( $PSBoundParameters['WhatIf'] ) {
+            return
+        }
+
         # static parts of the crescendo module
         # the schema will be taken from the first configuration file
         $ModuleVersion = $MyInvocation.MyCommand.Version
-        if ( $ParameterSetName -eq "file" ) {
+        if ( $PSCmdlet.ParameterSetName -eq "file" ) {
             $SchemaVersion = (Get-Content (Resolve-Path $ConfigurationFile[0])[0] | ConvertFrom-Json).'$schema'
         }
         if ( ! $SchemaVersion ) {
             $SchemaVersion = "unknown"
         }
+
         "# Module created by Microsoft.PowerShell.Crescendo" > $ModuleName
         "# Version: $ModuleVersion" >> $ModuleName
         "# Schema: $SchemaVersion" >> $ModuleName
@@ -815,26 +839,7 @@ function Export-CrescendoModule
         '}' >> $ModuleName
         '' >> $ModuleName
         $moduleBase = [System.IO.Path]::GetDirectoryName($ModuleName)
-    }
-    PROCESS {
-        if ( $PSBoundParameters['WhatIf'] ) {
-            return
-        }
-        if ($ParameterSetName -eq "command" ) {
-            $resolvedConfigurationPaths = (Resolve-Path $ConfigurationFile).Path
-            foreach($file in $resolvedConfigurationPaths) {
-                Write-Verbose "Adding $file to Crescendo collection"
-                $crescendoCollection += Import-CommandConfiguration $file
-            }
-        }
-        else {
-            $crescendoCollection += $command
-        }
-    }
-    END {
-        if ( $PSBoundParameters['WhatIf'] ) {
-            return
-        }
+
         [string[]]$cmdletNames = @()
         [string[]]$aliases = @()
         [string[]]$SetAlias = @()
