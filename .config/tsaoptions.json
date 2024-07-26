@@ -1,7 +1,7 @@
 {
     "instanceUrl": "https://msazure.visualstudio.com",
     "projectName": "One",
-    "areaPath": "One\\MGMT\\Compute\\Powershell\\Powershell Core\\Crescendo",
+    "areaPath": "One\\MGMT\\Compute\\Powershell\\Powershell\\Powershell Core\\Crescendo",
     "codebaseName": "TFSMSAzure_Crescendo",
     "notificationAliases": [ "jimtru@microsoft.com", "slee@microsoft.com" ],
     "tools": [ "CredScan", "PoliCheck", "BinSkim" ]
